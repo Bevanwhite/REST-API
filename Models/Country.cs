@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 namespace PokemonReviewApp.Models
 {
     public class Country

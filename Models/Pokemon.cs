@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System;
 namespace PokemonReviewApp.Models
 {
     public class Pokemon
