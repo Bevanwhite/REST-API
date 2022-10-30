@@ -12,14 +12,16 @@ namespace PokemonReviewApp.Controllers
     public class PokemonController : Controller 
     {
         private readonly IPokemonRepository _pokemonRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IOwnerRepository _ownerRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository, IOwnerRepository ownerRepository, ICategoryRepository categoryRepository,IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository, IOwnerRepository ownerRepository,IReviewRepository reviewRepository,ICategoryRepository categoryRepository,IMapper mapper)
         {
             _pokemonRepository = pokemonRepository;
             _ownerRepository = ownerRepository;
+            _reviewRepository = reviewRepository;
             _categoryRepository = categoryRepository;
             _mapper = mapper;
         }
@@ -97,6 +99,35 @@ namespace PokemonReviewApp.Controllers
                 StatusCode(500, ModelState);
             }
             return Ok("Successfully created!!!");
+        }
+        [HttpPut("{pokeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdatePokemon(int pokeId,
+        [FromQuery] int ownerId, [FromQuery] int catId, 
+        [FromBody]PokemonDto pokemonUpdate)
+        {
+            if(pokemonUpdate == null)
+                return BadRequest(ModelState);
+
+            if(pokeId != pokemonUpdate.Id)
+                return BadRequest(ModelState);
+            
+            if(!_pokemonRepository.PokemonExists(pokeId))
+                return NotFound();
+                
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var pokeMap = _mapper.Map<Pokemon>(pokemonUpdate);
+
+            if(!_pokemonRepository.UpdatePokemon(ownerId, catId, pokeMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating category");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
         }
     }
 }
