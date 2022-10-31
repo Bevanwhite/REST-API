@@ -94,15 +94,15 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateReviewer(int ownerId, [FromBody]ReviewerDto reviewerUpdate)
+        public IActionResult UpdateReviewer(int reviewerId, [FromBody]ReviewerDto reviewerUpdate)
         {
             if(reviewerUpdate == null)
                 return BadRequest(ModelState);
 
-            if(ownerId != reviewerUpdate.Id)
+            if(reviewerId != reviewerUpdate.Id)
                 return BadRequest(ModelState);
             
-            if(!_reviewerRepository.ReviewerExists(ownerId))
+            if(!_reviewerRepository.ReviewerExists(reviewerId))
                 return NotFound();
                 
             if (!ModelState.IsValid)
@@ -115,6 +115,25 @@ namespace PokemonReviewApp.Controllers
                 ModelState.AddModelError("", "Something went wrong updating category");
                 return StatusCode(500, ModelState);
             }
+            return NoContent();
+        }
+        [HttpDelete("{reviewerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteReviewer(int reviewerId)
+        {
+            if(!_reviewerRepository.ReviewerExists(reviewerId))
+                return NotFound();
+            
+            var reviewerToDelete = _reviewerRepository.GetReviewer(reviewerId);
+
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if(_reviewerRepository.DeleteReviewer(reviewerToDelete))  
+                ModelState.AddModelError("","Some thing went wrong deleting Category");
+
             return NoContent();
         }
     }
